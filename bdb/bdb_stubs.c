@@ -1,4 +1,26 @@
-// Stubs appropriate for Berkeley DB 4.x
+/************************************************************************)
+(* bdb_stubs.c - Stubs appropriate for Berkeley DB 4.x and DB 5.x       *)
+(*                                                                      *)
+(* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,  *)
+(*               2011, 2012  Yaron Minsky and Contributors              *)
+(*                                                                      *)
+(* This file is part of SKS.  SKS is free software; you can             *)
+(* redistribute it and/or modify it under the terms of the GNU General  *)
+(* Public License as published by the Free Software Foundation; either  *)
+(* version 2 of the License, or (at your option) any later version.     *)
+(*                                                                      *)
+(* This program is distributed in the hope that it will be useful, but  *)
+(* WITHOUT ANY WARRANTY; without even the implied warranty of           *)
+(* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *)
+(* General Public License for more details.                             *)
+(*                                                                      *)
+(* You should have received a copy of the GNU General Public License    *)
+(* along with this program; if not, write to the Free Software          *)
+(* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  *)
+(* USA or see <http://www.gnu.org/licenses/>.                           *)
+(************************************************************************/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -27,7 +49,7 @@
 #define False 0
 
 
-void bzero(void* addr,size_t n) {
+void zerob(void* addr,size_t n) {
   memset(addr,0,n);
 }
 
@@ -210,7 +232,7 @@ void raise_run_recovery() {
 // calls to DB->err and DBENV->err lead to exceptions.
 
 // FIX: currently, prefix is ignored.  Should be concatenated.
-void raise_db_cb(const DB_ENV *dbenv, const char *prefix, char *msg) {
+void raise_db_cb(const DB_ENV *dbenv, const char *prefix, const char *msg) {
     raise_db(msg);
 }
 
@@ -512,7 +534,7 @@ value caml_db_del(value db, value txn_opt, value key) {
 
   test_db_closed(db);
 
-  bzero(&dbt,sizeof(DBT));
+  zerob(&dbt,sizeof(DBT));
 
   dbt.data = String_val(key);
   dbt.size = string_length(key);
@@ -542,7 +564,7 @@ value caml_db_put(value db, value txn_opt, value vkey,
 
   test_db_closed(db);
   
-  bzero(&key,sizeof(DBT)); bzero(&data,sizeof(DBT));
+  zerob(&key,sizeof(DBT)); zerob(&data,sizeof(DBT));
 
   key.data = String_val(vkey);
   key.size = string_length(vkey);
@@ -577,7 +599,7 @@ value caml_db_get(value db, value txn_opt, value vkey, value vflags) {
 
   test_db_closed(db);
 
-  bzero(&key,sizeof(DBT)); bzero(&data,sizeof(DBT));
+  zerob(&key,sizeof(DBT)); zerob(&data,sizeof(DBT));
 
   key.data = String_val(vkey);
   key.size = string_length(vkey);
@@ -827,7 +849,7 @@ value caml_cursor_put(value cursor, value vdata, value vflag) {
   
   test_cursor_closed(cursor);
 
-  bzero(&key,sizeof(DBT)); bzero(&data,sizeof(DBT));
+  zerob(&key,sizeof(DBT)); zerob(&data,sizeof(DBT));
 
   data.data = String_val(vdata);
   data.size = string_length(vdata);
@@ -851,7 +873,7 @@ value caml_cursor_kput(value cursor, value vkey, value vdata, value vflag) {
   
   test_cursor_closed(cursor);
 
-  bzero(&key,sizeof(DBT)); bzero(&data,sizeof(DBT));
+  zerob(&key,sizeof(DBT)); zerob(&data,sizeof(DBT));
 
   key.data = String_val(vkey);
   key.size = string_length(vkey);
@@ -880,7 +902,7 @@ value caml_cursor_init(value cursor, value vkey, value vflags) {
 
   test_cursor_closed(cursor);
 
-  bzero(&key,sizeof(DBT)); bzero(&data,sizeof(DBT));
+  zerob(&key,sizeof(DBT)); zerob(&data,sizeof(DBT));
 
   key.data = String_val(vkey);
   key.size = string_length(vkey);
@@ -906,7 +928,7 @@ value caml_cursor_init_range(value cursor, value vkey, value vflags) {
   int flags = convert_flag_list(vflags,cursor_get_flags) | DB_SET_RANGE;
   int err;
 
-  bzero(&key,sizeof(DBT)); bzero(&data,sizeof(DBT));
+  zerob(&key,sizeof(DBT)); zerob(&data,sizeof(DBT));
 
   test_cursor_closed(cursor);
 
@@ -948,7 +970,7 @@ value caml_cursor_init_both(value cursor, value vkey,
    flags = convert_flag_list(vflags,cursor_get_flags) | DB_GET_BOTH;
    test_cursor_closed(cursor);
 
-   bzero(&key,sizeof(DBT)); bzero(&data,sizeof(DBT));
+   zerob(&key,sizeof(DBT)); zerob(&data,sizeof(DBT));
 
    key.data = String_val(vkey);
    key.size = string_length(vkey);
@@ -975,7 +997,7 @@ value caml_cursor_get(value cursor, value vtype, value vflags) {
   int flags = Flag_val(vtype,cursor_get_type) | 
     convert_flag_list(vflags,cursor_get_flags);
   int err;
-  bzero(&key,sizeof(DBT)); bzero(&data,sizeof(DBT));
+  zerob(&key,sizeof(DBT)); zerob(&data,sizeof(DBT));
 
   test_cursor_closed(cursor);
 
@@ -1005,7 +1027,7 @@ value caml_cursor_get_keyonly(value cursor, value vtype, value vflags) {
   int flags = Flag_val(vtype,cursor_get_type) | 
     convert_flag_list(vflags,cursor_get_flags);
   int err;
-  bzero(&key,sizeof(DBT)); bzero(&data,sizeof(DBT));
+  zerob(&key,sizeof(DBT)); zerob(&data,sizeof(DBT));
 
   test_cursor_closed(cursor);
 

@@ -1,22 +1,25 @@
 (************************************************************************)
-(* This file is part of SKS.  SKS is free software; you can
-   redistribute it and/or modify it under the terms of the GNU General
-   Public License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-   USA *)
-(***********************************************************************)
-
-(** Executable: server process that handles database and 
-  database queries. *)
+(* dbserver.ml- Executable: server process that handles database and    *)
+(*              database queries.                                       *)
+(*                                                                      *)
+(* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,  *)
+(*               2011, 2012  Yaron Minsky and Contributors              *)
+(*                                                                      *)
+(* This file is part of SKS.  SKS is free software; you can             *)
+(* redistribute it and/or modify it under the terms of the GNU General  *)
+(* Public License as published by the Free Software Foundation; either  *)
+(* version 2 of the License, or (at your option) any later version.     *)
+(*                                                                      *)
+(* This program is distributed in the hope that it will be useful, but  *)
+(* WITHOUT ANY WARRANTY; without even the implied warranty of           *)
+(* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *)
+(* General Public License for more details.                             *)
+(*                                                                      *)
+(* You should have received a copy of the GNU General Public License    *)
+(* along with this program; if not, write to the Free Software          *)
+(* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  *)
+(* USA or see <http://www.gnu.org/licenses/>.                           *)
+(************************************************************************)
 
 module F(M:sig end) = 
 struct
@@ -30,6 +33,7 @@ struct
   open DbMessages
   open Request
   open Pstyle
+  open Sys
 
   let () = 
     set_logfile "db";
@@ -206,7 +210,7 @@ struct
 	      in
 	      tsort_keys keys
     in
-    if keys = [] then raise (Wserver.Misc_error "No keys found")
+    if keys = [] then raise (Wserver.No_results "No keys found")
     else keys
 
 
@@ -220,7 +224,7 @@ struct
 	    then result
 	    else (trunc_c (result @ [h]) tail (num-1))
     in
-    if count > 0
+    if count >= 0
     then trunc_c [] keys count 
     else keys
 
@@ -236,8 +240,19 @@ struct
 	  let keys = clean_keys request keys in
 	  let count = List.length keys in
 	  let keys = truncate request.limit keys in
-	  let keystr = Key.to_string_multiple keys in
-	  let aakeys = Armor.encode_pubkey_string keystr in
+	  let aakeys = 
+	    match keys with
+	      | [] -> ""
+	      | _ -> let keystr = Key.to_string_multiple keys in
+		      Armor.encode_pubkey_string keystr
+	  in
+	  if request.machine_readable then 
+	  (
+		"application/pgp-keys; charset=UTF-8",
+		count,
+	    sprintf "%s" aakeys
+	  )
+	  else
 	  ("text/html; charset=UTF-8",
 	   count,
 	   HtmlTemplates.page  
@@ -401,7 +416,6 @@ struct
       ".png",   "image/png";
       ".htm",   "text/html";
       ".html",  "text/html";
-      ".shtml", "text/html";
       ".txt",   "text/plain"; 
       ".css",   "text/css";
       ".xhtml", "application/xhtml+xml";
@@ -411,7 +425,28 @@ struct
       ".js",    "application/javascript";
     ]
 
+  (* Search list for web page index files *)
+  let index_files =
+    [ "index.html";
+      "index.htm";
+      "index.xhtml";
+      "index.xhtm";
+      "index.xml";
+    ]
+
   (** Handler for HTTP requests *)
+  let index_page_filename = 
+    let index_file_exists x = Sys.file_exists (convert_web_fname x) in 
+    let found_files = List.filter (fun x -> index_file_exists x = true) index_files in
+      try	List.hd found_files
+	with Failure "hd" -> "index.html"
+  
+  let index_page_mime =
+    let period = Str.regexp_string "." in   
+      match Str.split period index_page_filename with
+	| _::ext::_ -> List.assoc ("." ^ ext) supported_extensions
+	| _ -> raise(Wserver.Misc_error ("No mime type found for index page"))
+		
   let webhandler addr msg cout = 
     match msg with 
       | Wserver.GET (request,headers) ->
@@ -425,12 +460,12 @@ struct
 	    (mimetype, count)
 	  ) else (
 	    if (base = "/index.html" || base = "/index.htm" 
-		|| base = "/" || base = "")
+		|| base = "/" || base = "" || base = "/index.xhtml" )
 	    then
-	      let fname = convert_web_fname "index.html" in 
+	      let fname = convert_web_fname index_page_filename in 
 	      let text = read_file fname in
 	      cout#write_string text;
-	      ("text/html; charset=UTF-8", -1)
+	      (index_page_mime ^ "; charset=UTF-8", -1)
 	    else 
 	      (try 
 		 let extension = get_extension base in

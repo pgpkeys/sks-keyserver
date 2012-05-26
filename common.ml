@@ -1,22 +1,25 @@
 (************************************************************************)
-(* This file is part of SKS.  SKS is free software; you can
-   redistribute it and/or modify it under the terms of the GNU General
-   Public License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-   USA *)
-(***********************************************************************)
-
-(** Common services, including error reporting, logging,
-  exception handling and port definitions  *)
+(* common.ml- Common services, including error reporting, logging,      *)
+(*            exception handling and port definitions                   *)
+(*                                                                      *)
+(* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,  *)
+(*               2011, 2012  Yaron Minsky and Contributors              *)
+(*                                                                      *)
+(* This file is part of SKS.  SKS is free software; you can             *)
+(* redistribute it and/or modify it under the terms of the GNU General  *)
+(* Public License as published by the Free Software Foundation; either  *)
+(* version 2 of the License, or (at your option) any later version.     *)
+(*                                                                      *)
+(* This program is distributed in the hope that it will be useful, but  *)
+(* WITHOUT ANY WARRANTY; without even the implied warranty of           *)
+(* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *)
+(* General Public License for more details.                             *)
+(*                                                                      *)
+(* You should have received a copy of the GNU General Public License    *)
+(* along with this program; if not, write to the Free Software          *)
+(* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  *)
+(* USA or see <http://www.gnu.org/licenses/>.                           *)
+(************************************************************************)
 
 open Printf
 open StdLabels
@@ -45,6 +48,10 @@ let compatible_version_tuple = (0,1,5)
 let version =
   let (maj_version,min_version,release) = version_tuple in
   sprintf "%d.%d.%d" maj_version min_version release
+
+let compatible_version_string =
+	let (maj_version,min_version,release) = compatible_version_tuple in 
+	sprintf "%d.%d.%d" maj_version min_version release 
 
 let period_regexp = Str.regexp "[.]"
 

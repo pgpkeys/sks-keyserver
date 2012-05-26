@@ -159,6 +159,12 @@ spider: $(LIBS) $(ALLOBJS) spider.cmx
 spider.bc: $(LIBS.bc) $(ALLOBJS.bc) spider.cmo
 	$(OCAMLC) -o spider.bc $(OCAMLFLAGS) $(ALLOBJS.bc) spider.cmo
 
+sksclient: $(LIBS) $(ALLOBJS) sksclient.cmx
+	$(OCAMLOPT) -o sksclient $(OCAMLOPTFLAGS) $(ALLOBJS) sksclient.cmx
+
+sksclient.bc: $(LIBS.bc) $(ALLOBJS.bc) sksclient.cmo
+	$(OCAMLC) -o sksclient.bc $(OCAMLFLAGS) $(ALLOBJS.bc) sksclient.cmo
+
 sks: $(LIBS) $(ALLOBJS) sks.cmx
 	$(OCAMLOPT) -o sks $(OCAMLOPTFLAGS) $(ALLOBJS) sks.cmx
 
@@ -273,15 +279,16 @@ prepared:
 	touch prepared
 
 
-CKDIR=cryptokit-1.0
+CKVER=cryptokit-1.5
+CKDIR=$(CKVER)/src
 
-$(CKDIR)/README: 
-	tar xmvfz $(CKDIR).tar.gz
+$(CKVER)/README.txt: 
+	tar xmvfz $(CKVER).tar.gz
 
-$(CKDIR)/cryptokit.cma: $(CKDIR)/README
+$(CKDIR)/cryptokit.cma: $(CKVER)/README.txt
 	cd $(CKDIR) && $(MAKE) all
 
-$(CKDIR)/cryptokit.cmxa: $(CKDIR)/README
+$(CKDIR)/cryptokit.cmxa: $(CKVER)/README.txt
 	cd $(CKDIR) && $(MAKE) allopt
 
 lib/cryptokit.cma: $(CKDIR)/cryptokit.cma $(CKDIR)/cryptokit.cmxa prepared
@@ -393,7 +400,7 @@ clean: mlclean
 
 cleanall: clean bdbclean
 	rm -f lib/*
-	rm -rf $(CKDIR)
+	rm -rf $(CKVER)
 	rm -rf $(NXDIR)
 	rm -rf
 

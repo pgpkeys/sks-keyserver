@@ -1,3 +1,26 @@
+(************************************************************************)
+(* spider.ml - start with a SKS server and spider the entire network by *)
+(*             recursively crawling peers from stats pages              *)
+(*                                                                      *)
+(* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,  *)
+(*               2011, 2012  Yaron Minsky and Contributors              *)
+(*                                                                      *)
+(* This file is part of SKS.  SKS is free software; you can             *)
+(* redistribute it and/or modify it under the terms of the GNU General  *)
+(* Public License as published by the Free Software Foundation; either  *)
+(* version 2 of the License, or (at your option) any later version.     *)
+(*                                                                      *)
+(* This program is distributed in the hope that it will be useful, but  *)
+(* WITHOUT ANY WARRANTY; without even the implied warranty of           *)
+(* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *)
+(* General Public License for more details.                             *)
+(*                                                                      *)
+(* You should have received a copy of the GNU General Public License    *)
+(* along with this program; if not, write to the Free Software          *)
+(* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  *)
+(* USA or see <http://www.gnu.org/licenses/>.                           *)
+(************************************************************************)
+
 open StdLabels
 open MoreLabels
 open Printf
@@ -13,7 +36,7 @@ let root =
   if Array.length Sys.argv = 2 then
     (Sys.argv.(1),11370)
   else
-    ("stinkfoot.org",11370)
+    ("pool.sks-keyservers.net",11370)
 
 let input_lines cin = 
   let rec loop lines = 
@@ -41,8 +64,8 @@ let fetch_url url =
   | Unix.WEXITED 0 -> Some lines
   | _ -> None
 
-let start_line = Str.regexp ".*Gossip Peers.*"
-let whitespace = Str.regexp "[ \t]+"
+let start_line = Str.regexp "<h2>Gossip Peers.*"
+let whitespace = Str.regexp "[ \t<]+"
 
 let get_peer line = 
   if line </> (0,8) = "<tr><td>" then
