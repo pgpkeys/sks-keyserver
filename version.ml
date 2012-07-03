@@ -21,18 +21,30 @@
 (***********************************************************************)
 
 open Printf
-open Bdb
 
-let run() =  
-   printf "SKS version %s%s\n" Common.version Common.version_suffix; 
-   let bdb_version = version() in 
-   printf "Information about the BerkelyDB environment:\nCompiled with BDB version %s\n" bdb_version;
-   
-   let sopen dirname flags mode = 
-     let dbenv = Dbenv.create () in
-     Dbenv.dopen dbenv dirname flags mode;
-     dbenv
-   in
-   let dbenv = sopen (Lazy.force Settings.dbdir) [Dbenv.CREATE] 0o400 in
-   let stats = Dbenv.get_dbenv_stats(dbenv);  in 
-     printf "Detailed environment statistics:\n%s\n" stats;
+
+let run () =
+  let bdb_version = Bdb.version () in
+  let stats =
+    let dbenv = Bdb.Dbenv.create (); in
+    Bdb.Dbenv.dopen dbenv (Lazy.force Settings.dbdir) [Bdb.Dbenv.CREATE] 0o400;
+    Bdb.Dbenv.get_dbenv_stats dbenv
+  in
+  let dbstats_dir =
+    let split = Str.regexp_string "\\." in
+    let major_minor_string major minor =
+      sprintf "Further details can be seen by executing \
+             db%s.%s_stat -x in the KDB and Ptree directories\n" major minor
+    in
+    match Str.split split bdb_version with
+    | major :: minor :: _ -> major_minor_string major minor
+    | [] | _ :: []        -> major_minor_string "X"   "Y"
+  in
+  printf "SKS version %s%s\nThis version has a minimum compatibility \
+          requirement for recon of SKS %s\n"
+    Common.version Common.version_suffix Common.compatible_version_string;
+
+  printf "Compiled with BDB version %s\n" bdb_version;
+  printf "Detailed BDB environment statistics:\n%s" stats;
+  printf "%s" dbstats_dir
+
