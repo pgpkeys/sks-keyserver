@@ -40,12 +40,17 @@ open Bdb
 open Packet
 
 type dbsettings = { withtxn: bool;
-                    cache_bytes: int option;
-                    pagesize: int option;
-                    dbdir: string;
-                    dumpdir: string;
-                  }
-
+		    cache_bytes: int option;
+		    pagesize: int option;
+		    keyid_pagesize: int option;
+		    meta_pagesize: int option;
+		    subkeyid_pagesize: int option;
+		    time_pagesize: int option;
+		    tqueue_pagesize: int option;
+		    word_pagesize: int option;
+		    dbdir: string;
+		    dumpdir: string;
+		  }
 
 module type RestrictedKeydb =
 sig
@@ -327,6 +332,7 @@ struct
                   else [] ) )
             0o600;
 
+<<<<<<< local
           let openflags = (if settings.withtxn then [Db.CREATE; Db.AUTO_COMMIT]
                            else [Db.CREATE])
           in
@@ -334,7 +340,24 @@ struct
           (match settings.pagesize with None -> ()
              | Some pagesize -> Db.set_pagesize key pagesize);
           Db.dopen key key_db_name Db.BTREE openflags 0o600;
+=======
+	  let openflags = (if settings.withtxn then [Db.CREATE; Db.AUTO_COMMIT]
+			   else [Db.CREATE])
+	  in
+	  let key = Db.create ~dbenv [] in
+	  (match settings.pagesize with None -> ()
+	     | Some pagesize -> Db.set_pagesize key pagesize);
+	  Db.dopen key key_db_name Db.BTREE openflags 0o600;
+	  
+	  let keyid = Db.create ~dbenv [] in
+	  (match settings.keyid_pagesize with
+	   | None -> ()
+	   | Some keyid_pagesize -> Db.set_pagesize keyid keyid_pagesize);
+	  Db.set_flags keyid [Db.DUPSORT];
+	  Db.dopen keyid keyid_db_name Db.BTREE openflags 0o600;
+>>>>>>> other
 
+<<<<<<< local
           let word = Db.sopen ~dbenv word_db_name Db.BTREE
                        ~moreflags:[Db.DUPSORT] openflags 0o600
           in
@@ -353,6 +376,41 @@ struct
           let meta = Db.sopen ~dbenv meta_db_name Db.BTREE
                          ~moreflags:[] openflags 0o600
           in
+=======
+	  let meta = Db.create ~dbenv [] in
+          (match settings.meta_pagesize with
+           | None -> ()
+           | Some meta_pagesize -> Db.set_pagesize meta meta_pagesize);
+          Db.dopen meta meta_db_name Db.BTREE openflags 0o600;
+	  
+	  let subkey_keyid = Db.create ~dbenv [] in
+	  (match settings.subkeyid_pagesize with
+	   | None -> ()
+	   | Some subkeyid_pagesize ->
+	       Db.set_pagesize subkey_keyid subkeyid_pagesize);
+	  Db.set_flags subkey_keyid [Db.DUPSORT];
+	  Db.dopen subkey_keyid subkey_keyid_db_name Db.BTREE openflags 0o600;
+
+	  let time = Db.create ~dbenv [] in
+	  (match settings.time_pagesize with
+	   | None -> ()
+	   | Some time_pagesize -> Db.set_pagesize time time_pagesize);
+	  Db.set_flags time [Db.DUPSORT];
+	  Db.dopen time time_db_name Db.BTREE openflags 0o600;
+
+	  let tqueue = Db.create ~dbenv [] in
+          (match settings.tqueue_pagesize with
+           | None -> ()
+           | Some tqueue_pagesize -> Db.set_pagesize tqueue tqueue_pagesize);
+          Db.dopen tqueue tqueue_db_name Db.BTREE openflags 0o600;
+
+	  let word = Db.create ~dbenv [] in
+          (match settings.word_pagesize with
+           | None -> ()
+           | Some word_pagesize -> Db.set_pagesize word word_pagesize);
+          Db.set_flags word [Db.DUPSORT];
+          Db.dopen word word_db_name Db.BTREE openflags 0o600;
+>>>>>>> other
 
           (** Sets up array of dump files for entries where
             file offset is stored instead of key contents *)
