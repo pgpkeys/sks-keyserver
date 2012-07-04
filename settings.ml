@@ -123,7 +123,7 @@ let anonlist = ref ([] : string list)
 let cache_bytes = ref (Some (20 * 1024 * 1024))
 let set_cache_bytes value = cache_bytes := Some (value * 1024 * 1024)
 
-let pagesize = ref (Some 2048)
+let pagesize = ref (Some 65536)
 let set_pagesize value = pagesize := Some (value * 512)
 
 let keyid_pagesize = ref None
@@ -148,7 +148,7 @@ let ptree_cache_bytes = ref (Some (5 * 1024 * 1024))
 let set_ptree_cache_bytes value = 
   ptree_cache_bytes := Some (value * 1024 * 1024)
 
-let ptree_pagesize = ref (Some 512)
+let ptree_pagesize = ref (Some 4096)
 let set_ptree_pagesize value = ptree_pagesize := Some (value * 512)
 
 let hostname = ref (Unix.gethostname ())
