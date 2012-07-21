@@ -34,6 +34,7 @@ exception Partial_body_length of int
 
 (** parse new-style packet length *)
 let parse_new_packet_length cin = 
+let parse_new_packet_length cin =
   let byte1 = cin#read_byte in
   if byte1 <= 191 then byte1  (* one-octet length *)
   else if byte1 <= 223  then (* two-octet length *) 
